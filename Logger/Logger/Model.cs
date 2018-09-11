@@ -5,22 +5,71 @@ using System.Data.SqlClient;
 
 namespace Logger
 {
-    class Model:IDisposable
+    class Model : IDisposable
     {
         private SqlConnection connection;
         private DataTable table;
-        public Model(string init="master",bool integr=true)
+        string user_name;
+        string pc_name;
+        private Type eventType;
+        public Model(Type evt, string init = "master", bool integr = true)
         {
-            connection = new SqlConnection(GetConnectionString(init, integr));
+            eventType = evt;
+            connection = new SqlConnection(GetConnectionString(init,integr));
+         //   connection.ConnectionString = GetConnectionString(init, integr);
+            //  connection = new SqlConnection(GetConnectionString(init, integr));
+          
             table = new DataTable();
+            user_name = Environment.UserName;
+            pc_name = Environment.MachineName;
 
         }
-
-        public void InsertDataLogin()
+        public void Start()
         {
+            switch (eventType)
+            {
+                case Type.Login:
+                    try
+                    {
+               
+                        InsertDataLogin();
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        Console.WriteLine(ex.StackTrace);
+                    }
+                   
+                    break;
+                case Type.Logout:
+                    InsertDataLogout();
+                    break;
+                default:
+                    break;
+            }
+        }
+        private void InsertDataLogin()
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand();
+            command.CommandText = "INSERT INTO dbo.Log(PcName,UserName,Type,Time) VALUES(@p1,@p2,@p3,@p4)";
+            var p1 = command.CreateParameter();
+            p1.ParameterName = "@p1";
+            p1.SqlDbType = SqlDbType.NVarChar;
+            var p2 = command.CreateParameter();
+            p2.ParameterName = "@p2";
+            p2.SqlDbType = SqlDbType.NVarChar;
+            var p3 = command.CreateParameter();
+            p3.ParameterName = "@p3";
+            p3.SqlDbType = SqlDbType.TinyInt;
+            var p4 = command.CreateParameter();
+            p4.ParameterName = "@p4";
+            p4.SqlDbType = SqlDbType.DateTime;
+            command.ExecuteNonQuery();
+            command.Dispose();
 
         }
-        public void InsertDataLogout()
+        private void InsertDataLogout()
         {
             ReadLastLogin();
         }
@@ -29,7 +78,6 @@ namespace Logger
             connection.Open();
             SqlCommand command = new SqlCommand();
             command.CommandText = "SELECT date TOP(1) FROM dbo.Log WHERE pc_name=@p1";
-            
             SqlParameter param = command.CreateParameter();
             param.SqlDbType = SqlDbType.NVarChar;
             param.ParameterName = "@p1";
@@ -38,14 +86,17 @@ namespace Logger
             command.ExecuteScalar();
         }
 
-        static String GetConnectionString(string initial,bool integrated)
+        static String GetConnectionString(string initial, bool integrated)
         {
-            String  connect=System.Configuration.ConfigurationManager.ConnectionStrings["Connect"].ConnectionString;
-            return String.Format("Data Source={0};Initial Catalog={1};Integrated Security={2};", connect, initial, integrated);
+            String connect = @"DESKTOP - PC73D7E\SQLEXPRESS";
+            string ret = @"Persist Security Info=False;Integrated Security=true;Initial Catalog=master;Server=DESKTOP - PC73D7E\SQLEXPRESS;";
+            return ret;
+            
+            //return String.Format("Data Source={0};Initial Catalog={1};Integrated Security={2};", connect, initial, integrated.ToString());
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // Для определения избыточных вызовов
+        private bool disposedValue = false;
 
         protected virtual void Dispose(bool disposing)
         {
@@ -55,31 +106,14 @@ namespace Logger
                 {
                     connection.Close();
                     connection.Dispose();
-                   
                     table.Dispose();
-                    // TODO: освободить управляемое состояние (управляемые объекты).
                 }
-
-                // TODO: освободить неуправляемые ресурсы (неуправляемые объекты) и переопределить ниже метод завершения.
-                // TODO: задать большим полям значение NULL.
-
                 disposedValue = true;
             }
         }
-
-        // TODO: переопределить метод завершения, только если Dispose(bool disposing) выше включает код для освобождения неуправляемых ресурсов.
-        // ~Model() {
-        //   // Не изменяйте этот код. Разместите код очистки выше, в методе Dispose(bool disposing).
-        //   Dispose(false);
-        // }
-
-        // Этот код добавлен для правильной реализации шаблона высвобождаемого класса.
         public void Dispose()
         {
-            // Не изменяйте этот код. Разместите код очистки выше, в методе Dispose(bool disposing).
             Dispose(true);
-            // TODO: раскомментировать следующую строку, если метод завершения переопределен выше.
-            // GC.SuppressFinalize(this);
         }
         #endregion
 
