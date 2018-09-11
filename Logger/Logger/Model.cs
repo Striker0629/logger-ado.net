@@ -9,8 +9,8 @@ namespace Logger
     {
         private SqlConnection connection;
         private DataTable table;
-        string user_name;
-        string pc_name;
+        string UserName;
+        string PcName;
         private Type eventType;
         public Model(Type evt, string init = "master", bool integr = true)
         {
@@ -20,8 +20,8 @@ namespace Logger
             //  connection = new SqlConnection(GetConnectionString(init, integr));
           
             table = new DataTable();
-            user_name = Environment.UserName;
-            pc_name = Environment.MachineName;
+            UserName = Environment.UserName;
+            PcName = Environment.MachineName;
 
         }
         public void Start()
@@ -48,23 +48,28 @@ namespace Logger
                     break;
             }
         }
-        private void InsertDataLogin()
+        private  void InsertDataLogin()
         {
             connection.Open();
             SqlCommand command = new SqlCommand();
+            
             command.CommandText = "INSERT INTO dbo.Log(PcName,UserName,Type,Time) VALUES(@p1,@p2,@p3,@p4)";
             var p1 = command.CreateParameter();
             p1.ParameterName = "@p1";
             p1.SqlDbType = SqlDbType.NVarChar;
+            p1.SqlValue = PcName;
             var p2 = command.CreateParameter();
             p2.ParameterName = "@p2";
+            p2.SqlValue = UserName;
             p2.SqlDbType = SqlDbType.NVarChar;
             var p3 = command.CreateParameter();
             p3.ParameterName = "@p3";
             p3.SqlDbType = SqlDbType.TinyInt;
+            p3.SqlValue = eventType;
             var p4 = command.CreateParameter();
             p4.ParameterName = "@p4";
             p4.SqlDbType = SqlDbType.DateTime;
+            p4.SqlValue = DateTime.Now;
             command.ExecuteNonQuery();
             command.Dispose();
 
@@ -89,7 +94,8 @@ namespace Logger
         static String GetConnectionString(string initial, bool integrated)
         {
             String connect = @"DESKTOP - PC73D7E\SQLEXPRESS";
-            string ret = @"Persist Security Info=False;Integrated Security=true;Initial Catalog=master;Server=DESKTOP - PC73D7E\SQLEXPRESS;";
+            string ret;/*= @"Data Source=(localhostdb)\v13.0;Integrated Security=true;Initial Catalog=LoggerDB;";*/
+            ret = @"server=DESKTOP-PC73D7E\SQLEXPRESS;database=LoggerDB;integrated Security=SSPI";
             return ret;
             
             //return String.Format("Data Source={0};Initial Catalog={1};Integrated Security={2};", connect, initial, integrated.ToString());

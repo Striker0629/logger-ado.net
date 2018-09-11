@@ -42,6 +42,7 @@ namespace Logger
             else
                 throw new ArgumentException("Неверный параметр коммандной строки\n Для входа используйте login\n Для выхода logout\n");
             Thread tread = new Thread(model.Start);
+            tread.IsBackground = true;
             tread.Start();
             while(tread.IsAlive)
             {
