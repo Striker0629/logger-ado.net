@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 
 namespace Logger
 {
-    class Model
+    class Model:IDisposable
     {
         private SqlConnection connection;
         private DataTable table;
@@ -16,12 +16,15 @@ namespace Logger
 
         }
 
-        public void InsertData()
+        public void InsertDataLogin()
         {
 
         }
-
-        public void ReadLastLogin()
+        public void InsertDataLogout()
+        {
+            ReadLastLogin();
+        }
+        private void ReadLastLogin()
         {
             connection.Open();
             SqlCommand command = new SqlCommand();
@@ -40,6 +43,45 @@ namespace Logger
             String  connect=System.Configuration.ConfigurationManager.ConnectionStrings["Connect"].ConnectionString;
             return String.Format("Data Source={0};Initial Catalog={1};Integrated Security={2};", connect, initial, integrated);
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // Для определения избыточных вызовов
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    connection.Close();
+                    connection.Dispose();
+                   
+                    table.Dispose();
+                    // TODO: освободить управляемое состояние (управляемые объекты).
+                }
+
+                // TODO: освободить неуправляемые ресурсы (неуправляемые объекты) и переопределить ниже метод завершения.
+                // TODO: задать большим полям значение NULL.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: переопределить метод завершения, только если Dispose(bool disposing) выше включает код для освобождения неуправляемых ресурсов.
+        // ~Model() {
+        //   // Не изменяйте этот код. Разместите код очистки выше, в методе Dispose(bool disposing).
+        //   Dispose(false);
+        // }
+
+        // Этот код добавлен для правильной реализации шаблона высвобождаемого класса.
+        public void Dispose()
+        {
+            // Не изменяйте этот код. Разместите код очистки выше, в методе Dispose(bool disposing).
+            Dispose(true);
+            // TODO: раскомментировать следующую строку, если метод завершения переопределен выше.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
 
 
     }
