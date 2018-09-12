@@ -65,28 +65,32 @@ namespace Logger
         private void InsertDataLogout()
         {
             var lastLogin = ReadLastLogin();
-            Console.WriteLine(lastLogin.ToString());
+           // Console.WriteLine(lastLogin);
         }
         private DateTime ReadLastLogin()
         {
+            SqlParameter returnValue;
+            //returnValue.SqlDbType = SqlDbType.DateTime;
             connection.Open();
             using (var command = connection.CreateCommand())
             {
 
                 command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "dbo.GetLastLogin";
+                command.CommandText = "dbo.GetLastLoginProc";
                 
                //new SqlParameter()
                 command.Parameters.AddWithValue("@pcname",PcName);
-                command.Parameters.AddWithValue("@username",UserName);
+                command.Parameters.AddWithValue("@user_name",UserName);
                 command.Parameters.AddWithValue("@type",eventType);
-                var returnValue = command.Parameters.Add(new SqlParameter("@RETURN_VALUE", SqlDbType.DateTime));
-                returnValue.Direction = ParameterDirection.ReturnValue;
-
+                 returnValue = command.Parameters.Add(new SqlParameter("@return", SqlDbType.DateTime));
+                returnValue.Direction = ParameterDirection.Output;
+                
                 command.ExecuteNonQuery();
-                return (DateTime)returnValue.Value;
+                //command.Dispose();
+              
             }
-
+            Console.WriteLine(returnValue.Value);
+            return DateTime.Now;
         }
 
         static String GetConnectionString(string initial)
