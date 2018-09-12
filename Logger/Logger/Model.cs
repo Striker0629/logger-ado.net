@@ -9,16 +9,14 @@ namespace Logger
     {
         private SqlConnection connection;
         private DataTable table;
-        string UserName;
-        string PcName;
+        private string UserName;
+        private string PcName;
         private Type eventType;
-        public Model(Type evt, string init = "master", bool integr = true)
+
+        public Model(Type evt, string init = "master")
         {
             eventType = evt;
-            connection = new SqlConnection(GetConnectionString(init,integr));
-         //   connection.ConnectionString = GetConnectionString(init, integr);
-            //  connection = new SqlConnection(GetConnectionString(init, integr));
-          
+            connection = new SqlConnection(GetConnectionString(init));
             table = new DataTable();
             UserName = Environment.UserName;
             PcName = Environment.MachineName;
@@ -29,76 +27,72 @@ namespace Logger
             switch (eventType)
             {
                 case Type.Login:
-                    try
-                    {
-               
-                        InsertDataLogin();
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                        Console.WriteLine(ex.StackTrace);
-                    }
-                   
+                    //try
+                    //{
+
+                    InsertDataLogin();
+                    //}
+                    //catch (InvalidOperationException ex)
+                    //{
+                    //    Console.WriteLine(ex.Message);
+                    //    Console.WriteLine(ex.StackTrace);
+                    //}
                     break;
                 case Type.Logout:
                     InsertDataLogout();
                     break;
                 default:
-                    break;
+                    throw new ArgumentException("Undefined Argument");
+
             }
         }
-        private  void InsertDataLogin()
+        private void InsertDataLogin()
         {
             connection.Open();
-            SqlCommand command = new SqlCommand();
-            
+            SqlCommand command = connection.CreateCommand();
             command.CommandText = "INSERT INTO dbo.Log(PcName,UserName,Type,Time) VALUES(@p1,@p2,@p3,@p4)";
-            var p1 = command.CreateParameter();
-            p1.ParameterName = "@p1";
-            p1.SqlDbType = SqlDbType.NVarChar;
-            p1.SqlValue = PcName;
-            var p2 = command.CreateParameter();
-            p2.ParameterName = "@p2";
-            p2.SqlValue = UserName;
-            p2.SqlDbType = SqlDbType.NVarChar;
-            var p3 = command.CreateParameter();
-            p3.ParameterName = "@p3";
-            p3.SqlDbType = SqlDbType.TinyInt;
-            p3.SqlValue = eventType;
-            var p4 = command.CreateParameter();
-            p4.ParameterName = "@p4";
-            p4.SqlDbType = SqlDbType.DateTime;
-            p4.SqlValue = DateTime.Now;
+            command.Parameters.Add("@p1", SqlDbType.NVarChar);
+            command.Parameters.Add("@p2", SqlDbType.NVarChar);
+            command.Parameters.Add("@p3", SqlDbType.TinyInt);
+            command.Parameters.Add("@p4", SqlDbType.DateTime);
+            command.Parameters["@p1"].Value = PcName;
+            command.Parameters["@p2"].Value = UserName;
+            command.Parameters["@p3"].Value = eventType;
+            command.Parameters["@p4"].Value = DateTime.Now;
             command.ExecuteNonQuery();
             command.Dispose();
-
         }
         private void InsertDataLogout()
         {
-            ReadLastLogin();
+            var lastLogin = ReadLastLogin();
+            Console.WriteLine(lastLogin.ToString());
         }
-        private void ReadLastLogin()
+        private DateTime ReadLastLogin()
         {
             connection.Open();
-            SqlCommand command = new SqlCommand();
-            command.CommandText = "SELECT date TOP(1) FROM dbo.Log WHERE pc_name=@p1";
-            SqlParameter param = command.CreateParameter();
-            param.SqlDbType = SqlDbType.NVarChar;
-            param.ParameterName = "@p1";
-            param.Value = Environment.MachineName;
-            SqlDataReader reader = command.ExecuteReader();
-            command.ExecuteScalar();
+            using (var command = connection.CreateCommand())
+            {
+
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "dbo.GetLastLogin";
+                
+               //new SqlParameter()
+                command.Parameters.AddWithValue("@pcname",PcName);
+                command.Parameters.AddWithValue("@username",UserName);
+                command.Parameters.AddWithValue("@type",eventType);
+                var returnValue = command.Parameters.Add(new SqlParameter("@RETURN_VALUE", SqlDbType.DateTime));
+                returnValue.Direction = ParameterDirection.ReturnValue;
+
+                command.ExecuteNonQuery();
+                return (DateTime)returnValue.Value;
+            }
+
         }
 
-        static String GetConnectionString(string initial, bool integrated)
+        static String GetConnectionString(string initial)
         {
-            String connect = @"DESKTOP - PC73D7E\SQLEXPRESS";
-            string ret;/*= @"Data Source=(localhostdb)\v13.0;Integrated Security=true;Initial Catalog=LoggerDB;";*/
-            ret = @"server=DESKTOP-PC73D7E\SQLEXPRESS;database=LoggerDB;integrated Security=SSPI";
-            return ret;
-            
-            //return String.Format("Data Source={0};Initial Catalog={1};Integrated Security={2};", connect, initial, integrated.ToString());
+            return String.Format(@"server=DESKTOP-PC73D7E\SQLEXPRESS;database=LoggerDB;integrated Security=SSPI", initial);
+
         }
 
         #region IDisposable Support

@@ -8,55 +8,31 @@ namespace Logger
     enum Type:byte
     {
         Login,
-        Logout
-
+        Logout,
+        Error
+        
     }
     class Program
     {
-        static string login;
-        static string logout;
         static  Model model;
-    
-        //public Program()
-        //{
-        //    model = new Model();
-        //}
-        static Program()
-        {
-            login = "login";
-            logout = "logout";
-        }
         static void Main(string[] args)
         {
-            if (true)
+            if(args.Length>=0)
             {
-                Console.WriteLine("Login");
-                model = new Model(Type.Login);
-
-            }
-            else if (args.Contains(logout))
-            {
-                Console.WriteLine("Logout");
-                model = new Model(Type.Logout);
-            }
-            else
-                throw new ArgumentException("Неверный параметр коммандной строки\n Для входа используйте login\n Для выхода logout\n");
-            Thread tread = new Thread(model.Start);
-            tread.IsBackground = true;
-            tread.Start();
-            while(tread.IsAlive)
-            {
+                Type arg=Type.Logout;
+                try
+                {
+                    arg = (Type)Enum.Parse(typeof(Type), args[0], true);
+                }
+                catch (Exception){}
+                model = new Model(arg,"LoggerDB");
+                model.Start();
                 Console.SetCursorPosition(0, 1);
                 Console.WriteLine("Await Please");
+                model.Dispose();
+                Console.ReadKey();
             }
-            // model.Start();
-            tread.Join();
-            model.Dispose();
-            Console.ReadKey();
+            
         }
-
-
-
-
     }
 }
