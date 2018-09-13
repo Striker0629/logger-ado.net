@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.Sql;
 using System.Data.SqlClient;
 
@@ -6,27 +7,40 @@ namespace Logger
 {
     class Model
     {
-        private SqlConnection connection;
-        public Model(string init="master",bool integr=true)
+        //private EventType eventType;
+        private ILogger logger;
+        public Model(EventType type)
         {
-            connection = new SqlConnection(GetConnectionString(init, integr));
+        
+          switch(type)
+            {
+                case EventType.Login:
+                    logger = new Login(Model.GetConnectionString());
+                    break;
+                case EventType.Logout:
+                    logger = new Logout(Model.GetConnectionString());
+                    break;
+                case EventType.NoArgument:
+                    logger = new NoArgument(Model.GetConnectionString());
+                    break;
+                default:
+                    throw new IncorrectArgs("Incorrect argument");
+            }
+                    
 
         }
-
-        public void InsertData()
+        public void Start()
         {
 
+            logger.Log();
         }
+        
 
-        public void ReadData()
+       public static String GetConnectionString(string initial="LoggerDB")
         {
+            //DESKTOP - PC73D7E\SQLEXPRESS
+            return String.Format(@"server=localhost\SQLEXPRESS;database={0};integrated Security=SSPI", initial);
 
-        }
-
-        static String GetConnectionString(string initial,bool integrated)
-        {
-            String  connect=System.Configuration.ConfigurationManager.ConnectionStrings["Connect"].ConnectionString;
-            return String.Format("Data Source={0};Initial Catalog={1};Integrated Security={2};", connect, initial, integrated);
         }
 
 
