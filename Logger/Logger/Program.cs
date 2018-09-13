@@ -5,11 +5,11 @@ using System.Data.SqlClient;
 
 namespace Logger
 {
-    enum Type:byte
+    enum EventType:byte
     {
         Login,
         Logout,
-        Error
+      
         
     }
     class Program
@@ -19,10 +19,10 @@ namespace Logger
         {
             if(args.Length>=0)
             {
-                Type arg=Type.Logout;
+                EventType arg=EventType.Login;
                 try
                 {
-                    arg = (Type)Enum.Parse(typeof(Type), args[0], true);
+                    arg = (EventType)Enum.Parse(typeof(EventType), args[0], true);
                 }
                 catch (Exception){}
                 model = new Model(arg,"LoggerDB");

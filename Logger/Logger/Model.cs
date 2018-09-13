@@ -11,9 +11,9 @@ namespace Logger
         private DataTable table;
         private string UserName;
         private string PcName;
-        private Type eventType;
-
-        public Model(Type evt, string init = "master")
+        private EventType eventType;
+        private ILogger logger;
+        public Model(EventType evt, string init = "master")
         {
             eventType = evt;
             connection = new SqlConnection(GetConnectionString(init));
@@ -26,20 +26,13 @@ namespace Logger
         {
             switch (eventType)
             {
-                case Type.Login:
-                    //try
-                    //{
-
-                    InsertDataLogin();
-                    //}
-                    //catch (InvalidOperationException ex)
-                    //{
-                    //    Console.WriteLine(ex.Message);
-                    //    Console.WriteLine(ex.StackTrace);
-                    //}
+                case EventType.Login:
+                    logger = new Login(GetConnectionString("master"));
+                    
+                    logger.Log();
                     break;
-                case Type.Logout:
-                    InsertDataLogout();
+                case EventType.Logout:
+                    //InsertDataLogout();
                     break;
                 default:
                     throw new ArgumentException("Undefined Argument");
@@ -77,16 +70,18 @@ namespace Logger
 
                 command.CommandType = CommandType.StoredProcedure;
                 command.CommandText = "dbo.GetLastLoginProc";
+                command.Parameters.Clear();
+                //new SqlParameter(); localhost\SQLEXPRESS
+                command.Parameters.AddWithValue("@pcname",PcName).SqlDbType=SqlDbType.NVarChar;
+                command.Parameters.AddWithValue("@user_name",UserName).SqlDbType= SqlDbType.NVarChar;
+                command.Parameters.AddWithValue("@type",EventType.Login).SqlDbType=SqlDbType.TinyInt;
+                returnValue = new SqlParameter("@return", SqlDbType.DateTime);
                 
-               //new SqlParameter()
-                command.Parameters.AddWithValue("@pcname",PcName);
-                command.Parameters.AddWithValue("@user_name",UserName);
-                command.Parameters.AddWithValue("@type",eventType);
-                 returnValue = command.Parameters.Add(new SqlParameter("@return", SqlDbType.DateTime));
                 returnValue.Direction = ParameterDirection.Output;
-                
+                command.Parameters.Add(returnValue);
                 command.ExecuteNonQuery();
-                //command.Dispose();
+                connection.Close();
+                command.Dispose();
               
             }
             Console.WriteLine(returnValue.Value);
@@ -95,9 +90,11 @@ namespace Logger
 
         static String GetConnectionString(string initial)
         {
-            return String.Format(@"server=DESKTOP-PC73D7E\SQLEXPRESS;database=LoggerDB;integrated Security=SSPI", initial);
+            //DESKTOP - PC73D7E\SQLEXPRESS
+            return String.Format(@"server=localhost\SQLEXPRESS;database=LoggerDB;integrated Security=SSPI", initial);
 
         }
+        //public Action<void> Log => logger.Log;
 
         #region IDisposable Support
         private bool disposedValue = false;
