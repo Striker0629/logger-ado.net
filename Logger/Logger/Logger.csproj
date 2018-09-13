@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ILogger.cs" />
+    <Compile Include="IncorrectArgs.cs" />
     <Compile Include="Login.cs" />
     <Compile Include="Logout.cs" />
     <Compile Include="Model.cs" />
