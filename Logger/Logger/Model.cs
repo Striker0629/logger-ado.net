@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 
 namespace Logger
 {
-    class Model : IDisposable
+    class Model
     {
         //private EventType eventType;
         private ILogger logger;
@@ -15,10 +15,13 @@ namespace Logger
           switch(type)
             {
                 case EventType.Login:
-                    logger = new Login(Model.GetConnectionString(""));
+                    logger = new Login(Model.GetConnectionString());
                     break;
                 case EventType.Logout:
-                    logger = new Logout(Model.GetConnectionString(""));
+                    logger = new Logout(Model.GetConnectionString());
+                    break;
+                case EventType.NoArgument:
+                    logger = new NoArgument(Model.GetConnectionString());
                     break;
                 default:
                     throw new IncorrectArgs("Incorrect argument");
@@ -28,67 +31,17 @@ namespace Logger
         }
         public void Start()
         {
-            //switch (eventType)
-            //{
-            //    case EventType.Login:
-            //        logger = new Login(GetConnectionString("master"));
-                    
-            //        logger.Log();
-            //        break;
-            //    case EventType.Logout:
-            //        logger = new Logout(GetConnectionString("master"));
-            //        logger.Log();
-            //        //InsertDataLogout();
-            //        break;
-            //    default:
-            //        throw new ArgumentException("Undefined Argument");
 
-            //}
             logger.Log();
         }
-        //private void InsertDataLogout()
-        //{
-        //    var lastLogin = ReadLastLogin();
-        //   // Console.WriteLine(lastLogin);
-        //}
         
 
-       public static String GetConnectionString(string initial)
+       public static String GetConnectionString(string initial="LoggerDB")
         {
             //DESKTOP - PC73D7E\SQLEXPRESS
-            return String.Format(@"server=localhost\SQLEXPRESS;database=LoggerDB;integrated Security=SSPI", initial);
+            return String.Format(@"server=localhost\SQLEXPRESS;database={0};integrated Security=SSPI", initial);
 
         }
-        //public Action<void> Log => logger.Log;
-        public ILogger Logger
-        {
-            get { return logger; }
-            set
-            {               
-                    logger = value;
-            }
-        }
-        #region IDisposable Support
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    connection.Close();
-                    connection.Dispose();
-                    table.Dispose();
-                }
-                disposedValue = true;
-            }
-        }
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-        #endregion
 
 
     }

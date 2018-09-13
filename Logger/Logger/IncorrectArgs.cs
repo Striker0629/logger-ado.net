@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Logger
 {
+    
     class IncorrectArgs:Exception
     {
         public IncorrectArgs(string message=""):base(message)

@@ -8,8 +8,8 @@ namespace Logger
     enum EventType:byte
     {
         Login,
-        Logout
-      
+        Logout,
+        NoArgument
         
     }
     class Program
@@ -17,25 +17,28 @@ namespace Logger
         static  Model model;
         static void Main(string[] args)
         {
-            if(args.Length>=0)
+            try
             {
-                //IncorrectArgs ar = new IncorrectArgs("hellow");
-                
-                //EventType arg=EventType.Logout;
-                //try
-                //{
-                //    arg = (EventType)Enum.Parse(typeof(EventType), args[0], true);
-                //}
-                //catch (Exception){}
-                model = new Model(EventType.Logout,"LoggerDB");
-                model.Logger = new Logout(Model.GetConnectionString(""));
-                model.Start();
-                Console.SetCursorPosition(0, 1);
-                Console.WriteLine("Await Please");
-                model.Dispose();
-                Console.ReadKey();
+                if (args.Length > 0)
+                {
+                    EventType arg = (EventType)Enum.Parse(typeof(EventType), args[0], true);
+                    model = new Model(arg);
+                }
+                else
+                    model = new Model(EventType.NoArgument);
+              
             }
-            
+            catch (IncorrectArgs except)
+            {
+                Console.WriteLine(except.Message);
+            }
+            model?.Start();
+            Console.WriteLine("Await Please");
+            Console.ReadKey();
+
+
+
+
         }
     }
 }
