@@ -19,7 +19,7 @@ namespace Logger
         {
             if(args.Length>=0)
             {
-                EventType arg=EventType.Login;
+                EventType arg=EventType.Logout;
                 try
                 {
                     arg = (EventType)Enum.Parse(typeof(EventType), args[0], true);

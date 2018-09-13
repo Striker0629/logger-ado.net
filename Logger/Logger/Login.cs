@@ -10,7 +10,7 @@ namespace Logger
 {
     class Login:ILogger
     {
-        private SqlConnection connection;
+        //private SqlConnection connection;
         private String connectionString;
         public Login(String conString)
         {
@@ -18,7 +18,7 @@ namespace Logger
         }
         public void Log()
         {
-            using (connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 using (var command = connection.CreateCommand())
                 {

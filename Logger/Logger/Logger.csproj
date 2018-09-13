@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="ILogger.cs" />
     <Compile Include="Login.cs" />
+    <Compile Include="Logout.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
