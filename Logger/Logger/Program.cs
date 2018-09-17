@@ -17,6 +17,7 @@ namespace Logger
         static  Model model;
         static void Main(string[] args)
         {
+            
             try
             {
                 if (args.Length > 0)
