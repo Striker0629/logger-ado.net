@@ -23,7 +23,8 @@ namespace Logger
                     if (connection.State != System.Data.ConnectionState.Open) connection.Open();
                     command.CommandType = System.Data.CommandType.Text;
                     command.CommandText = "SELECT PcName,UserName,Time,Type,TimeInSeconds FROM dbo.Log as l LEFT JOIN dbo.WorkedTime as w ON  l.Id=w.LogId " +
-                        " WHERE l.UserName=@username AND l.PcName=@pcname";
+                        " WHERE l.UserName=@username AND l.PcName=@pcname" +" "+
+                        "AND l.Time>=DATEDIFF(day,1,GETDATE())";
                     command.Parameters.AddWithValue("@username", Environment.UserName).SqlDbType=System.Data.SqlDbType.NVarChar;
                     command.Parameters.AddWithValue("@pcname", Environment.MachineName).SqlDbType = System.Data.SqlDbType.NVarChar;
                   var reader=command.ExecuteReader();
